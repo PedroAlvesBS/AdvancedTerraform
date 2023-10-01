@@ -88,3 +88,14 @@ variable "environment_instance_settings" {
     },
   }
 }
+
+variable "dbusername" {
+  type = string
+  default = "db-user"
+  sensitive = tru
+}
+
+variable "dbpassword" {
+  type = string
+  sensitive = true
+}

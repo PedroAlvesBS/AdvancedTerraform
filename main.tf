@@ -111,18 +111,41 @@ resource "google_compute_instance" "web3" {
 }
 
 ## DB
-resource "google_compute_instance" "mysqldb" {
-  name         = "mysqldb"
-  machine_type = "f1-micro"
-  
-  boot_disk {
-    initialize_params {
-      image = "debian-cloud/debian-11"
-    }
-  }
+#resource "google_compute_instance" "mysqldb" {
+#  name         = "mysqldb"
+#  machine_type = "f1-micro"
+#  
+#  boot_disk {
+#    initialize_params {
+#      image = "debian-cloud/debian-11"
+#    }
+#  }
+#
+#  network_interface {
+#    network = data.google_compute_network.default.self_link
+#    subnetwork = google_compute_subnetwork.subnet-1.self_link
+#  }  
+#}
 
-  network_interface {
-    network = data.google_compute_network.default.self_link
-    subnetwork = google_compute_subnetwork.subnet-1.self_link
-  }  
+resource "random_id" "db_name_suffix" {
+  byte_length = 4
+}
+
+## Cloud SQL
+resource "google_sql_database_instance" "cloudsql" {
+  name = "web-app-db-${random_id.db_name_suffix.hex}"
+  database_version = "MYSQL_8_0"
+  region = "us-central1"
+
+  settings {
+    tier = "db-f1-micro"
+  }
+  deletion_protection = false
+}
+
+## CLOUD SQL USER
+resource "google_sql_user" "users" {
+  name = var.dbusername
+  instance = google_sql_database_instance.cloudsql.name
+  password = var.dbpassword
 }
