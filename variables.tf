@@ -68,24 +68,36 @@ variable "environment_machine_type" {
 }
 
 variable "environment_instance_settings" {
-  type = map(object({machine_type=string, tags=list(string)}))
+  type = map(object({machine_type=string, tags=list(string), labels=map(string)}))
   default = {
     "DEV" = {
       machine_type = "f1-micro"
-      tags = ["dev"] 
+      tags = ["dev"]
+      labels = {
+        environment = "dev"
+      }
     },
     "QA" = {
       machine_type = "f1-micro"
-      tags = ["qa"] 
+      tags = ["qa"]
+      labels = {
+        environment = "qa"
+      }
     },
     "STAGE" = {
       machine_type = "f1-micro"
-      tags = ["stage"] 
+      tags = ["stage"]
+      labels = {
+        environment = "stage"
+      }
     },
     "PROD" = {
       machine_type = "f1-micro"
       tags = ["prod"] 
-    },
+      labels = {
+        environment = "prod"
+      }
+    }
   }
 }
 

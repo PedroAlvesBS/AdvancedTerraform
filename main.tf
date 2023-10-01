@@ -59,7 +59,7 @@ resource "google_compute_instance" "nginx_instance" {
   }
 }
 
-resource "google_compute_instance" "web-instances" {
+/* resource "google_compute_instance" "web-instances" {
   count = 3
   name         = "web${count.index}"
   machine_type = "f1-micro"
@@ -75,8 +75,26 @@ resource "google_compute_instance" "web-instances" {
     network = data.google_compute_network.default.self_link
     subnetwork = google_compute_subnetwork.subnet-1.self_link
   }
-}
+} */
 
+resource "google_compute_instance" "web-map-instances" {
+  for_each = var.environment_instance_settings
+  name         = "${lower(each.key)}-web"
+  machine_type = each.value.machine_type
+  labels = each.value.labels
+  
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+    }
+  }
+
+  network_interface {
+    # A default network is created for all GCP projects
+    network = data.google_compute_network.default.self_link
+    subnetwork = google_compute_subnetwork.subnet-1.self_link
+  }
+}
 
 ## WEB1
 #resource "google_compute_instance" "web1" {
@@ -166,4 +184,14 @@ resource "google_sql_user" "users" {
   name = var.dbusername
   instance = google_sql_database_instance.cloudsql.name
   password = var.dbpassword
+}
+
+## BUCKETS
+resource "google_storage_bucket" "environment_buckets" {
+  for_each = toset(var.environment_list)
+  name = "${lower(each.key)}_${var.project-id}"
+  location = "US"
+  versioning {
+    enabled = true
+  }
 }
